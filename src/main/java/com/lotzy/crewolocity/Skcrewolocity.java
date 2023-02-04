@@ -23,8 +23,9 @@ import com.lotzy.sockets.ServerInfo;
 import com.lotzy.sockets.SocketPacket;
 import com.lotzy.sockets.SocketServer;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
-import com.velocitypowered.api.event.connection.LoginEvent;
+import com.velocitypowered.api.event.player.ServerConnectedEvent;
 import com.velocitypowered.api.proxy.ServerConnection;
+import java.util.Optional;
 
 @Plugin(id = "skcrewolocity",
         name = "Skcrewolocity",
@@ -86,17 +87,21 @@ public class Skcrewolocity {
         socketServer = new SocketServer(port,clients);
         this.logger.info("Opened server socket on 127.0.0.1:"+port);
     }
+    
+
     @Subscribe
     public void onPlayerDisconnect(DisconnectEvent event) {
-        ServerConnection con = event.getPlayer().getCurrentServer().get();
-        if (con!=null)
-            socketServer.sendPacket(SocketPacket.PlayerLeavePacket(event.getPlayer().getUsername(),con.getServerInfo().getName()));
+        Optional<ServerConnection> s = event.getPlayer().getCurrentServer();
+        if (s.isPresent())
+            socketServer.sendPacket(SocketPacket.PlayerLeavePacket(event.getPlayer().getUsername(),s.get().getServer().getServerInfo().getName()));
     }
     
-    public void onPlayerConnect(LoginEvent event) {
-        ServerConnection con = event.getPlayer().getCurrentServer().get();
-         if (con!=null)
-            socketServer.sendPacket(SocketPacket.PlayerJoinPacket(event.getPlayer().getUsername(),con.getServerInfo().getName()));
+    @Subscribe
+    public void onPlayerConnect(ServerConnectedEvent event) {
+        Optional<RegisteredServer> s = event.getPreviousServer();
+        if (s.isPresent())
+            socketServer.sendPacket(SocketPacket.PlayerLeavePacket(event.getPlayer().getUsername(),s.get().getServerInfo().getName()));
+        socketServer.sendPacket(SocketPacket.PlayerJoinPacket(event.getPlayer().getUsername(),event.getServer().getServerInfo().getName()));
     }
     
 }
