@@ -44,8 +44,8 @@ public class SocketPacket implements Serializable {
         return new SocketPacket(PacketType.ALIVE, null);
     }
     
-    public static SocketPacket SignalPacket(String server, String key,String value) {
-        return new SocketPacket(PacketType.SIGNAL,new String[] {key,value}, server);
+    public static SocketPacket SignalPacket(String server, String key,Object value) {
+        return new SocketPacket(PacketType.SIGNAL,new Object[] {key,value}, server);
     }
     public static SocketPacket CommandPacket(String server, String[] commands) {
         return new SocketPacket(PacketType.COMMAND, commands, server);
