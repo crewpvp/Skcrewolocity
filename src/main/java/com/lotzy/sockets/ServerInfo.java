@@ -19,7 +19,7 @@ public class ServerInfo implements Serializable {
             players.remove(nick);
         }
         public void addPlayer(String nick) {
-            players.add(name);
+            players.add(nick);
         }
         public void setPlayers(String[] players) {
              this.players = new ArrayList<String>(Arrays.asList(players));
