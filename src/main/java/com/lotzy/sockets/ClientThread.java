@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class ClientThread extends Thread {
     protected Socket socket;
@@ -47,7 +45,8 @@ public class ClientThread extends Thread {
                 onClientDisconnection();
                 return;
             } catch (ClassNotFoundException ex) {
-                Logger.getLogger(ClientThread.class.getName()).log(Level.SEVERE, null, ex);
+                int id = server.clients.getIdByAddress(host);
+                Skcrewolocity.getInstance().getLogger().info("Invalid packet from "+server.clients.servers[id].getName());
             }
         }
     }
