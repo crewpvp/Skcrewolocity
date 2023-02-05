@@ -124,18 +124,6 @@ public class WebServer {
                 exchange.close();
             }));
             context.setAuthenticator(this.ba);
-            
-            context = webserver.createContext("/server/"+info.getName()+"/command", (exchange -> {
-                String command = decode(exchange.getRequestURI().getRawQuery());
-                if (info.isOnline() && !command.isEmpty()) {
-                    server.sendPacket(SocketPacket.CommandPacket(info.getName(), new String[] {command}), info.getName());
-                    exchange.sendResponseHeaders(200, 0);
-                } else {
-                    exchange.sendResponseHeaders(400, 0);
-                }
-                exchange.close();
-            }));
-            context.setAuthenticator(this.ba);
         }
         
         
