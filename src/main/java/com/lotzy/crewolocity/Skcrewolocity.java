@@ -22,6 +22,7 @@ import org.yaml.snakeyaml.Yaml;
 import com.lotzy.sockets.ServerInfo;
 import com.lotzy.sockets.SocketPacket;
 import com.lotzy.sockets.SocketServer;
+import com.lotzy.webserver.WebServer;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.player.ServerConnectedEvent;
 import com.velocitypowered.api.proxy.ServerConnection;
@@ -41,6 +42,8 @@ public class Skcrewolocity {
     private final Path dataDirectory;
     private SocketServer socketServer;
     private static Skcrewolocity instance;
+    private WebServer webServer;
+    
     public Logger getLogger() {
         return this.logger;
     }
@@ -68,7 +71,15 @@ public class Skcrewolocity {
             openSocketServer((int)data.get("socket-port"));
         } else {
             openSocketServer(1337);
-        }     
+        }
+        if (data.containsKey("web-server-enabled") && (Boolean)data.get("web-server-enabled")) {
+            int port = data.containsKey("web-server-port") ? (int)data.get("web-server-port") : 1338;
+            String user = data.containsKey("web-server-user") ? (String)data.get("web-server-user") : "admin";
+            String password = data.containsKey("web-server-password") ? (String)data.get("web-server-password") : "admin";
+            webServer = new WebServer(port,user,password,socketServer);
+            logger.info("Opened web server on 127.0.0.1:"+port);
+            logger.info("Auth token for access to web api: "+webServer.getAuthToken());
+        }
     }
     
     public void openSocketServer(int port) throws IOException {
