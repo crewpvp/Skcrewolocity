@@ -78,6 +78,36 @@ public class WebServer {
         }));
         context.setAuthenticator(this.ba);
         
+        context = webserver.createContext("/player", (exchange -> {
+            String[] parts = exchange.getRequestURI().getRawPath().split("\\\\");
+            OutputStream output = exchange.getResponseBody();
+            if (parts.length < 3 || parts[2].isEmpty()) {
+                String error = "{\"error\":\"Specify player's nickname\"}";
+                exchange.sendResponseHeaders(400, error.getBytes().length);
+                output.write(error.getBytes());
+                exchange.close();
+                return;
+            }
+            String nick = decode(parts[2]);
+            String resp = null;
+            for(ServerInfo info : server.clients.servers)
+                if(info.isOnline())
+                    for(String p : info.getPlayers())
+                        if (p.equals(nick))
+                            resp = "\""+info.getName()+"\"";
+            if (resp != null) {
+                exchange.sendResponseHeaders(200, resp.getBytes().length);
+                output.write(resp.getBytes());
+            } else {
+                String error = "{\"error\":\"Player not found\"}";
+                exchange.sendResponseHeaders(404, error.getBytes().length);
+                output.write(resp.getBytes());
+            }
+            output.flush();
+            exchange.close();
+        }));
+        context.setAuthenticator(this.ba);
+        
         for(ServerInfo info : server.clients.servers) {
             context = webserver.createContext("/server/"+info.getName()+"/players", (exchange -> {
                 String resp = info.getPlayers().length!=0 ? "[\""+String.join("\",\"",info.getPlayers())+"\"]" : "[]";
@@ -107,7 +137,11 @@ public class WebServer {
                     server.sendPacket(SocketPacket.SignalPacket(info.getName(), key, value), info.getName());
                     exchange.sendResponseHeaders(200, 0);
                 } else {
-                    exchange.sendResponseHeaders(400, 0);
+                    String error = "{\"error\":\"Key param not found\"}";
+                    exchange.sendResponseHeaders(400, error.getBytes().length);
+                    OutputStream output = exchange.getResponseBody();
+                    output.write(error.getBytes());
+                    output.flush();
                 }
                 exchange.close();
             }));
@@ -119,7 +153,11 @@ public class WebServer {
                     server.sendPacket(SocketPacket.CommandPacket(info.getName(), new String[] {command}), info.getName());
                     exchange.sendResponseHeaders(200, 0);
                 } else {
-                    exchange.sendResponseHeaders(400, 0);
+                    String error = "{\"error\":\"Empty command is not allowed\"}";
+                    exchange.sendResponseHeaders(400, error.getBytes().length);
+                    OutputStream output = exchange.getResponseBody();
+                    output.write(error.getBytes());
+                    output.flush();
                 }
                 exchange.close();
             }));
