@@ -79,7 +79,7 @@ public class WebServer {
         context.setAuthenticator(this.ba);
         
         context = webserver.createContext("/player", (exchange -> {
-            String[] parts = exchange.getRequestURI().getRawPath().split("\\\\");
+            String[] parts = exchange.getRequestURI().getRawPath().split("/");
             OutputStream output = exchange.getResponseBody();
             if (parts.length < 3 || parts[2].isEmpty()) {
                 String error = "{\"error\":\"Specify player's nickname\"}";
