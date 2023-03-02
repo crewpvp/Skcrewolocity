@@ -85,6 +85,7 @@ public class WebServer {
                 String error = "{\"error\":\"Specify player's nickname\"}";
                 exchange.sendResponseHeaders(400, error.getBytes().length);
                 output.write(error.getBytes());
+                output.flush();
                 exchange.close();
                 return;
             }
