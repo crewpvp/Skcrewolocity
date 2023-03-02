@@ -102,7 +102,7 @@ public class WebServer {
             } else {
                 String error = "{\"error\":\"Player not found\"}";
                 exchange.sendResponseHeaders(404, error.getBytes().length);
-                output.write(resp.getBytes());
+                output.write(error.getBytes());
             }
             output.flush();
             exchange.close();
