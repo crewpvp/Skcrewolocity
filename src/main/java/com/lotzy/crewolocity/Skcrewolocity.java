@@ -26,7 +26,11 @@ import com.lotzy.webserver.WebServer;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.player.ServerConnectedEvent;
 import com.velocitypowered.api.proxy.ServerConnection;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nullable;
 
 @Plugin(id = "skcrewolocity",
         name = "Skcrewolocity",
@@ -115,4 +119,27 @@ public class Skcrewolocity {
         socketServer.sendPacket(SocketPacket.PlayerJoinPacket(event.getPlayer().getUsername(),event.getServer().getServerInfo().getName()));
     }
     
+    public String[] getPlayers(@Nullable String[] servers) {
+        ArrayList<String> players = new ArrayList();
+        if (servers == null) {
+            List<String> srvs = Arrays.asList(servers);
+            for(RegisteredServer rs : this.server.getAllServers())
+                if (srvs.contains(rs.getServerInfo().getName()))
+                    for(Player p : rs.getPlayersConnected())
+                        players.add(p.getUsername());
+        } else {
+            for(RegisteredServer rs : this.server.getAllServers())
+                for(Player p : rs.getPlayersConnected())
+                    players.add(p.getUsername());
+        }
+        return players.toArray(String[]::new);
+    }
+    @Nullable
+    public String getServer(String nick) {
+        for(RegisteredServer rs : this.server.getAllServers())
+            for(Player p : rs.getPlayersConnected())
+                if (p.getUsername().equals(nick))
+                    return rs.getServerInfo().getName();
+        return null;
+    }
 }

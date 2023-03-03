@@ -1,5 +1,6 @@
 package com.lotzy.webserver;
 
+import com.lotzy.crewolocity.Skcrewolocity;
 import com.lotzy.sockets.ServerInfo;
 import com.lotzy.sockets.SocketPacket;
 import com.lotzy.sockets.SocketServer;
@@ -29,7 +30,6 @@ public class WebServer {
     private final String login;
     private final BasicAuthenticator ba;
     public final HttpServer webserver;
-
     public WebServer(int port, String user, String password, SocketServer server) throws IOException {
         this.login = user;
         this.password = password;
@@ -76,18 +76,16 @@ public class WebServer {
                     exchange.close();
                     return;
                 }
-
+                String[] players;
+                String[] servers;
                 switch(parts[1].toLowerCase()) {
                     case "players":
-                        ArrayList<String> players = new ArrayList();
                         params = splitQuery(exchange.getRequestURI().getRawQuery());
-                        List<String> servers = new ArrayList();
-                        servers = params.getOrDefault("server", servers);
-                        for(ServerInfo info : server.clients.servers) {
-                            if(!servers.isEmpty() && !servers.contains(info.getName())) continue;
-                            for(String p : info.getPlayers()) players.add(p);
-                        }
-                        resp = !players.isEmpty() ? "[\""+String.join("\",\"",players)+"\"]" : "[]";
+                        
+                        List<String> serversParam = params.getOrDefault("server", null);
+                        servers = serversParam!=null ? serversParam.toArray(String[]::new) : null;
+                        players = Skcrewolocity.getInstance().getPlayers(servers);
+                        resp = players.length!=0 ? "[\""+String.join("\",\"",players)+"\"]" : "[]";
                         rawResponseBody = resp.getBytes(StandardCharsets.UTF_8);
                         exchange.sendResponseHeaders(200, rawResponseBody.length);
                         os = exchange.getResponseBody();
@@ -127,15 +125,9 @@ public class WebServer {
                             return;
                         }
                         String nick = decode(parts[2]);
-                        resp = null;
-                        for(ServerInfo info : server.clients.servers) {
-                            if(!info.isOnline()) continue;
-                            for(String p : info.getPlayers()) {
-                                if (!p.equals(nick)) continue;
-                                resp = "\""+info.getName()+"\"";
-                            }
-                        }
+                        resp = Skcrewolocity.getInstance().getServer(nick);
                         if (resp != null) {
+                            resp = "\""+resp+"\"";
                             rawResponseBody = resp.getBytes(StandardCharsets.UTF_8);
                             exchange.sendResponseHeaders(200, rawResponseBody.length);
                         } else {
@@ -163,7 +155,8 @@ public class WebServer {
                             if (!info.getName().equals(parts[2])) continue;
                             switch(parts[3].toLowerCase()) {
                                 case "players":
-                                    resp = info.getPlayers().length!=0 ? "[\""+String.join("\",\"",info.getPlayers())+"\"]" : "[]";
+                                    players = Skcrewolocity.getInstance().getPlayers(new String[] {info.getName()});
+                                    resp = players.length!=0 ? "[\""+String.join("\",\"",players)+"\"]" : "[]";
                                     rawResponseBody = resp.getBytes(StandardCharsets.UTF_8);
                                     exchange.sendResponseHeaders(200, rawResponseBody.length);
                                     os = exchange.getResponseBody();
